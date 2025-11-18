@@ -1,0 +1,47 @@
+{
+  "expo": {
+    "name": "frontend-fixya",
+    "slug": "frontend-fixya",
+    "scheme": "frontend-fixya",
+    "version": "1.0.0",
+    "web": {
+      "favicon": "./assets/favicon.png",
+      "bundler": "metro"
+    },
+    "experiments": {
+      "tsconfigPaths": true
+    },
+    "plugins": [
+      "expo-router",
+      "expo-web-browser",
+      "expo-font"
+    ],
+    "orientation": "portrait",
+    "icon": "./assets/icon.png",
+    "userInterfaceStyle": "light",
+    "splash": {
+      "image": "./assets/splash.png",
+      "resizeMode": "contain",
+      "backgroundColor": "#ffffff"
+    },
+    "assetBundlePatterns": [
+      "**/*"
+    ],
+    "ios": {
+      "supportsTablet": true
+    },
+    "android": {
+      "adaptiveIcon": {
+        "foregroundImage": "./assets/adaptive-icon.png",
+        "backgroundColor": "#ffffff"
+      },
+      "package": "com.lr56c.frontendfixya"
+    },
+    "extra": {
+      "router": {},
+      "eas": {
+        "projectId": "600189a8-6d60-40b2-9dfa-51ddb67bf866"
+      }
+    }
+  }
+}
