@@ -1,43 +1,42 @@
+import AntDesign from "@expo/vector-icons/AntDesign"
 import * as FileSystem from "expo-file-system/legacy"
-import AntDesign       from "@expo/vector-icons/AntDesign"
 
-import React, { useState }                               from "react"
-import { Pressable, ScrollView, StyleSheet, Text, View } from "react-native"
 import {
-  SafeAreaView
-}                                                        from "react-native-safe-area-context"
-import * as DocumentPicker
-                                                         from "expo-document-picker"
-import { useFieldArray, useForm }                        from "react-hook-form"
+  errorColor
+} from "@/constants/theme"
 import {
-  zodResolver
-}                                                        from "@hookform/resolvers/zod"
-import {
-  useQuery
-}                                                        from "@tanstack/react-query"
-import {
-  CertificateTypeEnum,
-  Speciality
-}                                                        from "@/models/worker/response"
+  useAuth
+} from "@/hooks/auth_context"
+import { cloudinary } from "@/lib/api"
 import {
   specialitiesOption
-}                                                        from "@/lib/tanstack_query"
+} from "@/lib/tanstack_query"
 import {
   CertificatePayload,
   registerWorkerSchema
-}                                                        from "@/models/worker/payload"
-import { Image }                                         from "expo-image"
+} from "@/models/worker/payload"
 import {
-  errorColor
-}                                                        from "@/constants/theme"
-import { useRouter }                                     from "expo-router"
+  CertificateTypeEnum,
+  Speciality
+} from "@/models/worker/response"
 import {
-  useAuth
-}                                                        from "@/hooks/auth_context"
+  zodResolver
+} from "@hookform/resolvers/zod"
+import {
+  useQuery
+} from "@tanstack/react-query"
 import {
   upload
-}                                                        from "cloudinary-react-native"
-import { cloudinary }                                    from "@/lib/api"
+} from "cloudinary-react-native"
+import * as DocumentPicker from "expo-document-picker"
+import { Image } from "expo-image"
+import { useRouter } from "expo-router"
+import React, { useState } from "react"
+import { useFieldArray, useForm } from "react-hook-form"
+import { Pressable, ScrollView, StyleSheet, Text, View } from "react-native"
+import {
+  SafeAreaView
+} from "react-native-safe-area-context"
 
 
 export default function WorkerRegisterStep2() {

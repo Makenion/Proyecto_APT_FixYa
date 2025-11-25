@@ -93,5 +93,6 @@ func migrateModels(db *gorm.DB) error {
 		&salesmodel.RequestWorker{},
 		&salesmodel.Review{},
 		&salesmodel.Payment{},
+		&salesmodel.RequestValueWorker{},
 	)
 }

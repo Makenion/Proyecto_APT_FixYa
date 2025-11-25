@@ -1,9 +1,9 @@
 // 🎯 ARCHIVO: app/(tabs)/_layout.tsx (EDITADO)
 
-import React from 'react';
-import { Tabs } from 'expo-router';
-import { Text, View, StyleSheet } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
+import { Tabs } from 'expo-router';
+import React from 'react';
+import { StyleSheet, Text, View } from 'react-native';
 
 // --- CÓDIGO DEL TABICON QUE FALTABA ---
 // Este componente define cómo se ve cada botón de la barra de pestañas.

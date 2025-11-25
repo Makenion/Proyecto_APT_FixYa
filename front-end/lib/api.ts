@@ -1,11 +1,11 @@
-import axios from 'axios';
 import { Cloudinary } from "@cloudinary/url-gen";
+import axios from 'axios';
 
 const apiUrl          = process.env.EXPO_PUBLIC_API_URL
 
 export const cloudinary = new Cloudinary({
   cloud: {
-    cloudName: 'dbjikdw2o'
+    cloudName: 'dwrwhzxi4'
   },
   url: {
     secure: true

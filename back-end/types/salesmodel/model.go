@@ -10,6 +10,14 @@ import (
 	"gorm.io/gorm"
 )
 
+type ValueProposedActiveTypeEnum string
+
+const (
+	ValueProposedRechazado ValueProposedActiveTypeEnum = "rechazado"
+	ValueProposedActivo    ValueProposedActiveTypeEnum = "activo"
+	ValueProposedAceptado  ValueProposedActiveTypeEnum = "aceptado"
+)
+
 type RequestStatusTypeEnum string
 
 const (
@@ -28,7 +36,7 @@ const (
 
 type RequestImage struct {
 	ID        uint                 `gorm:"primaryKey" json:"id"`
-	Url       string               `gorm:"size:100;not null" json:"url"`
+	Url       string               `gorm:"size:500;not null" json:"url"`
 	Type      RequestImageTypeEnum `gorm:"type:varchar(20); not null" json:"type"`
 	RequestID uint                 `json:"request_id"`                          // Clave foránea
 	Request   Request              `gorm:"foreignKey:RequestID" json:"request"` // Referencia
@@ -37,7 +45,7 @@ type RequestImage struct {
 type RequestNote struct {
 	ID        uint    `gorm:"primaryKey" json:"id"`
 	Url       string  `gorm:"size:100;not null" json:"url"`
-	Text      string  `gorm:"size:100;not null" json:"text"`
+	Text      string  `gorm:"size:300;not null" json:"text"`
 	RequestID uint    `json:"request_id"`                          // Clave foránea
 	Request   Request `gorm:"foreignKey:RequestID" json:"request"` // Referencia
 }
@@ -53,8 +61,12 @@ type Request struct {
 	CreatedAt    time.Time              `gorm:"not null" json:"created_at"`
 	EndsAt       time.Time              `gorm:"not null" json:"ends_at"`
 	Status       RequestStatusTypeEnum  `gorm:"type:varchar(20);not null" json:"status"`
-	Location     string                 `gorm:"size:100;not null" json:"location"`
-	LocationText string                 `gorm:"size:100;not null" json:"location_text"`
+	//Posicion longitud y altitud
+	Location string `gorm:"size:100;not null" json:"location"`
+	//Calle o algo asi que ponga el usuario
+	LocationText  string  `gorm:"size:100;not null" json:"location_text"`
+	Complexity    string  `gorm:"type:varchar(20);not null" json:"complexity"`
+	EstimatedTime float64 `gorm:"not null" json:"estimated_time"`
 
 	Images []RequestImage `gorm:"foreignKey:RequestID" json:"images"`
 	Notes  []RequestNote  `gorm:"foreignKey:RequestID" json:"notes"`
@@ -63,21 +75,33 @@ type Request struct {
 	User   usermodel.User `gorm:"foreignKey:UserID" json:"user"`
 }
 
+type RequestValueWorker struct {
+	ID             uint                        `gorm:"primaryKey" json:"id"`
+	ValueProposed  uint32                      `gorm:"not null" json:"value_proposed"`
+	ProposedAt     time.Time                   `gorm:"not null" json:"proposed_at"`
+	Active         ValueProposedActiveTypeEnum `gorm:"not null" json:"active"`
+	RequestID      uint                        `gorm:"not null" json:"request_id"`                     // Clave foránea
+	Request        Request                     `gorm:"foreignKey:RequestID" json:"request"`            // Referencia
+	WorkerDetailID uint                        `gorm:"not null" json:"worker_detail_id"`               // Clave foránea
+	WorkerDetail   workermodel.WorkerDetail    `gorm:"foreignKey:WorkerDetailID" json:"worker_detail"` // Referencia
+
+}
+
 type RequestWorker struct {
 	ID            uint                  `gorm:"primaryKey" json:"id"`
 	Extra         *uint32               `gorm:"null" json:"extra"`
-	DateStart     time.Time             `gorm:"not null" json:"date_start"`
-	DateFinish    time.Time             `gorm:"not null" json:"date_finish"`
-	DateAccepted  *time.Time            `gorm:"not null" json:"date_accepted"`
-	DateCompleted *time.Time            `gorm:"not null" json:"date_completed"`
+	DateStart     time.Time             `gorm:"null" json:"date_start"`
+	DateFinish    time.Time             `gorm:"null" json:"date_finish"`
+	DateAccepted  time.Time             `gorm:"not null" json:"date_accepted"`
+	DateCompleted time.Time             `gorm:"null" json:"date_completed"`
 	Status        RequestStatusTypeEnum `gorm:"type:varchar(20);not null" json:"status"`
 	StatusClient  RequestStatusTypeEnum `gorm:"type:varchar(20);not null" json:"status_client"`
 	StatusWorker  RequestStatusTypeEnum `gorm:"type:varchar(20);not null" json:"status_worker"`
 
-	RequestID uint    `gorm:"unique" json:"request_id"`            // Clave foránea
+	RequestID uint    `gorm:"not null" json:"request_id"`          // Clave foránea
 	Request   Request `gorm:"foreignKey:RequestID" json:"request"` // Referencia
 
-	WorkerDetailID uint                     ` json:"worker_detail_id"`                              // Clave foránea
+	WorkerDetailID uint                     `gorm:"not null" json:"worker_detail_id"`               // Clave foránea
 	WorkerDetail   workermodel.WorkerDetail `gorm:"foreignKey:WorkerDetailID" json:"worker_detail"` // Referencia
 	// Reviews        []Review                 `gorm:"foreignKey:RequestWorkerID" json:"reviews"`
 	// Payments       []Payment                `gorm:"foreignKey:RequestWorkerID" json:"payments"`
@@ -180,9 +204,6 @@ func (rw *RequestWorker) AfterUpdate(tx *gorm.DB) (err error) {
 }
 
 func createPortfolioEntryOnCompletion(tx *gorm.DB, rw *RequestWorker) (err error) {
-	if rw.DateCompleted == nil {
-		return nil
-	}
 
 	var request = rw.Request
 	if err := tx.Preload("Images").First(&request, rw.RequestID).Error; err != nil {

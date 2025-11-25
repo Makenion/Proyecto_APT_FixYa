@@ -1,9 +1,9 @@
 // 🎯 ARCHIVO: app/(tabs2)/_layout.tsx (CORREGIDO Y CON ESTILOS)
 
-import React                      from "react"
-import { Tabs }                   from "expo-router"
+import { Ionicons } from "@expo/vector-icons"
+import { Tabs } from "expo-router"
+import React from "react"
 import { StyleSheet, Text, View } from "react-native"
-import { Ionicons }               from "@expo/vector-icons"
 
 // --- 1. COPIAMOS EL MISMO TabIcon DE TU OTRO _layout.tsx ---
 // Este componente define el círculo azul para la pestaña activa.
@@ -79,14 +79,6 @@ export default function TabLayoutMaestro() {
           tabBarIcon: ( { focused } ) => <TabIcon iconName="person-outline"
                                                   name="Perfil"
                                                   focused={ focused }/>
-        } }
-      />
-
-      {/* --- 2. AQUÍ OCULTAMOS LAS RUTAS EXTRA --- */ }
-      <Tabs.Screen
-        name="index"
-        options={ {
-          href: null
         } }
       />
 

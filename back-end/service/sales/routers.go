@@ -26,11 +26,16 @@ func (h *Handler) RegisterRouter(router *mux.Router, middleware *middleware.Midd
 	protectedRoutes.Use(middleware.JWTMiddleware)
 	protectedRoutes.HandleFunc("/review", h.handlerCreateReview).Methods("POST")
 	protectedRoutes.HandleFunc("/review", h.handlerGetReviewsByFilters).Methods("GET")
+	protectedRoutes.HandleFunc("/request-cliente", h.handlerGetRequestsClienteByFilters).Methods("GET")
+	protectedRoutes.HandleFunc("/request-trabajador", h.handlerGetRequestsTrabajadorByFilters).Methods("GET")
 	protectedRoutes.HandleFunc("/request", h.handlerCreateRequest).Methods("POST")
 	protectedRoutes.HandleFunc("/request", h.handlerDeleteRequest).Methods("DELETE")
 	protectedRoutes.HandleFunc("/request", h.handlerUpdateRequest).Methods("PUT")
 	protectedRoutes.HandleFunc("/request", h.handlerGetRequestsByFilters).Methods("GET")
-	protectedRoutes.HandleFunc("/worker", h.handlerCreateRequestWorker).Methods("POST")
+	protectedRoutes.HandleFunc("/request-accepted", h.handlerCreateRequestWorker).Methods("POST")
+	protectedRoutes.HandleFunc("/request-value-proposed", h.handlerCreateValorPropuesto).Methods("POST")
+	protectedRoutes.HandleFunc("/request-value-proposed", h.handlerGetValueClientByFilters).Methods("GET")
+	protectedRoutes.HandleFunc("/request-value-proposed", h.handlerSetStatusValueCliente).Methods("PUT")
 	protectedRoutes.HandleFunc("/worker", h.handlerDeleteRequestWorker).Methods("DELETE")
 	protectedRoutes.HandleFunc("/worker", h.handlerGetRequestsWorkersByFilters).Methods("GET")
 	protectedRoutes.HandleFunc("/worker", h.handlerUpdateRequestWorker).Methods("PUT")
@@ -68,6 +73,34 @@ func (h *Handler) handlerCreateReview(w http.ResponseWriter, r *http.Request) {
 	utils.WriteJSON(w, http.StatusCreated, nil)
 }
 
+// Patron de criteria - Criteria builder.
+// Pa los filtros
+func (h *Handler) handlerGetRequestsTrabajadorByFilters(w http.ResponseWriter, r *http.Request) {
+	ctx := r.Context()
+	filters := utils.MapQueryToJSON(r.URL.Query())
+	requests, err := h.service.GetRequestsTrabajadorByFilters(ctx, filters)
+
+	if err != nil {
+		utils.WriteError(w, http.StatusInternalServerError, err)
+		return
+	}
+
+	utils.WriteJSON(w, http.StatusOK, requests)
+}
+
+func (h *Handler) handlerGetRequestsClienteByFilters(w http.ResponseWriter, r *http.Request) {
+	ctx := r.Context()
+	filters := utils.MapQueryToJSON(r.URL.Query())
+	requests, err := h.service.GetRequestsClienteByFilters(ctx, filters)
+
+	if err != nil {
+		utils.WriteError(w, http.StatusInternalServerError, err)
+		return
+	}
+
+	utils.WriteJSON(w, http.StatusOK, requests)
+}
+
 func (h *Handler) handlerGetReviewsByFilters(w http.ResponseWriter, r *http.Request) {
 	ctx := r.Context()
 	filters := utils.MapQueryToJSON(r.URL.Query())
@@ -87,12 +120,16 @@ func (h *Handler) handlerCreateRequest(w http.ResponseWriter, r *http.Request) {
 
 	err := utils.ParseJSON(r, &payload)
 	if err != nil {
+		println("Error al parsear JSON")
+		println(err.Error())
 		utils.WriteError(w, http.StatusBadRequest, err)
 		return
 	}
 
 	err = utils.Validate.Struct(payload)
 	if err != nil {
+		println("Error al validar la estructura")
+		println(err.Error())
 		errors := err.(validator.ValidationErrors)
 		utils.WriteError(w, http.StatusBadRequest, fmt.Errorf("invalid payload %v", errors))
 		return
@@ -111,7 +148,7 @@ func (h *Handler) handlerCreateRequest(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	_, err = h.service.CreateRequest(ctx, userId, &payload)
+	req, err := h.service.CreateRequest(ctx, userId, &payload)
 
 	if err != nil {
 		var status int
@@ -123,7 +160,7 @@ func (h *Handler) handlerCreateRequest(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	utils.WriteJSON(w, http.StatusCreated, nil)
+	utils.WriteJSON(w, http.StatusCreated, req)
 }
 
 func (h *Handler) handlerCreateRequestWorker(w http.ResponseWriter, r *http.Request) {
@@ -132,6 +169,8 @@ func (h *Handler) handlerCreateRequestWorker(w http.ResponseWriter, r *http.Requ
 
 	err := utils.ParseJSON(r, &payload)
 	if err != nil {
+		println("Error al parsear el payload")
+		println(err.Error())
 		utils.WriteError(w, http.StatusBadRequest, err)
 		return
 	}
@@ -143,25 +182,7 @@ func (h *Handler) handlerCreateRequestWorker(w http.ResponseWriter, r *http.Requ
 		return
 	}
 
-	claims, ok := ctx.Value(utils.UserContextKey).(*usermodel.UserToken)
-	if !ok {
-		http.Error(w, "No se pudieron obtener los datos del usuario", http.StatusInternalServerError)
-		return
-	}
-
-	if claims.Type != "trabajador" {
-		http.Error(w, "No se pudieron obtener los datos del usuario", http.StatusInternalServerError)
-		return
-	}
-
-	userId, err := utils.StringToUint(claims.Subject)
-
-	if err != nil {
-		http.Error(w, "No se pudieron obtener los datos del usuario", http.StatusInternalServerError)
-		return
-	}
-
-	_, err = h.service.CreateRequestWorker(ctx, userId, &payload)
+	_, err = h.service.CreateRequestWorker(ctx, &payload)
 
 	if err != nil {
 		var status int
@@ -229,6 +250,33 @@ func (h *Handler) handlerGetRequestsWorkersByFilters(w http.ResponseWriter, r *h
 	ctx := r.Context()
 	filters := utils.MapQueryToJSON(r.URL.Query())
 	reviews, err := h.service.GetRequestsWorkersByFilters(ctx, filters)
+
+	if err != nil {
+		utils.WriteError(w, http.StatusInternalServerError, err)
+		return
+	}
+
+	utils.WriteJSON(w, http.StatusOK, reviews)
+}
+
+func (h *Handler) handlerSetStatusValueCliente(w http.ResponseWriter, r *http.Request) {
+	ctx := r.Context()
+	parametros := utils.MapQueryToJSON(r.URL.Query())
+
+	err := h.service.SetStatusValueCliente(ctx, parametros)
+
+	if err != nil {
+		utils.WriteError(w, http.StatusInternalServerError, err)
+		return
+	}
+
+	utils.WriteJSON(w, http.StatusOK, nil)
+}
+
+func (h *Handler) handlerGetValueClientByFilters(w http.ResponseWriter, r *http.Request) {
+	ctx := r.Context()
+	filters := utils.MapQueryToJSON(r.URL.Query())
+	reviews, err := h.service.GetValueClientByFilters(ctx, filters)
 
 	if err != nil {
 		utils.WriteError(w, http.StatusInternalServerError, err)
@@ -312,4 +360,43 @@ func (h *Handler) handlerUpdateRequestWorker(w http.ResponseWriter, r *http.Requ
 	}
 
 	utils.WriteJSON(w, http.StatusOK, rw)
+}
+
+func (h *Handler) handlerCreateValorPropuesto(w http.ResponseWriter, r *http.Request) {
+	ctx := r.Context()
+	var payload salesmodel.CreateValorPropuestoPayload
+
+	err := utils.ParseJSON(r, &payload)
+	if err != nil {
+		println("Error al parsear JSON")
+		println(err.Error())
+		utils.WriteError(w, http.StatusBadRequest, err)
+		return
+	}
+
+	err = utils.Validate.Struct(payload)
+	if err != nil {
+		println("Error al validar la estructura")
+		println(err.Error())
+		errors := err.(validator.ValidationErrors)
+		utils.WriteError(w, http.StatusBadRequest, fmt.Errorf("invalid payload %v", errors))
+		return
+	}
+
+	println("router payload.ValorProposed")
+	println(payload.ValorProposed)
+
+	req, err := h.service.CreateValorPropuesto(ctx, &payload)
+
+	if err != nil {
+		var status int
+		switch err {
+		default:
+			status = http.StatusInternalServerError
+		}
+		utils.WriteError(w, status, err)
+		return
+	}
+
+	utils.WriteJSON(w, http.StatusCreated, req)
 }

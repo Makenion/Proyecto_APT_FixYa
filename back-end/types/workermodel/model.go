@@ -15,7 +15,7 @@ const (
 type Certificate struct {
 	ID   uint   `gorm:"primaryKey" json:"id"`
 	Name string `gorm:"size:100;not null" json:"name"`
-	Url  string `gorm:"size:100;not null" json:"url"`
+	Url  string `gorm:"size:300;not null" json:"url"`
 
 	CertificateType CertificateTypeEnum `gorm:"type:varchar(20)" json:"certificate_type"`
 
@@ -30,7 +30,8 @@ type Speciality struct {
 }
 
 type WorkerDetail struct {
-	ID               uint    `gorm:"primaryKey" json:"id"`
+	ID uint `gorm:"primaryKey" json:"id"`
+	//Es la plata que ganan al hacer los trabajos.
 	Balance          float64 `gorm:"not null" json:"balance"`
 	WorksCount       uint    `gorm:"not null" json:"works_count"`
 	ReviewCount      uint    `gorm:"not null" json:"review_count"`

@@ -1,8 +1,7 @@
-import { Stack, useRouter }        from "expo-router"
-import React, { useEffect }        from "react"
-import { useAuth }                 from "@/hooks/auth_context"
+import { useAuth } from "@/hooks/auth_context"
+import { Stack, useRouter } from "expo-router"
+import React, { useEffect } from "react"
 import { ActivityIndicator, View } from "react-native"
-import { UserTypeEnum }            from "@/models/user/response"
 
 export default function RootLayout() {
   const { user, worker, isLoading } = useAuth()

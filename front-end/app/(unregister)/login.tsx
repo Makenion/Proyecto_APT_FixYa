@@ -1,6 +1,27 @@
-import React, { useState } from "react"
+import { errorColor } from "@/constants/theme"
+import { useAuth } from "@/hooks/auth_context"
 import {
-  Button,
+  LoginUserPayload,
+  loginUserSchema
+} from "@/models/user/payload"
+import {
+  zodResolver
+} from "@hookform/resolvers/zod"
+import {
+  Link,
+  useRouter
+} from "expo-router"
+import React, { useState } from "react"; // 1. Agregado useState
+import {
+  Controller,
+  useForm
+} from "react-hook-form"
+import {
+  ActivityIndicator // 2. Agregado ActivityIndicator
+  ,
+
+
+
   Image,
   Pressable,
   StyleSheet,
@@ -9,36 +30,26 @@ import {
   View
 } from "react-native"
 import {
-  Link
-}                          from "expo-router"
-import {
   SafeAreaView
-}                          from "react-native-safe-area-context"
-import {
-  Controller,
-  useForm
-}                          from "react-hook-form"
-import {
-  zodResolver
-}                          from "@hookform/resolvers/zod"
-import {
-  LoginUserPayload,
-  loginUserSchema
-}                                    from "@/models/user/payload"
-import { errorColor } from "@/constants/theme"
-import { toast } from 'sonner-native';
+} from "react-native-safe-area-context"
 
 export default function LoginScreen() {
   const {
           control,
           handleSubmit,
           formState: { errors }
-        }                       = useForm( {
+        }                               = useForm( {
     resolver: zodResolver( loginUserSchema )
   } )
+  const {login} = useAuth()
+  const router           = useRouter()
+  
+  // 3. Estado de carga
+  const [isLoading, setIsLoading] = useState(false)
 
-  const onSubmit = (data : LoginUserPayload) => {
-    console.log( "Intentando iniciar sesión con:", data )
+  const onSubmit = async (data : LoginUserPayload) => {
+    setIsLoading(true) // Activar carga
+    const ok = await login(data)
   }
 
   return (
@@ -58,6 +69,7 @@ export default function LoginScreen() {
               value={ value }
               keyboardType="email-address" autoCapitalize="none"
               placeholderTextColor="#999"
+              editable={!isLoading} // Bloquear input si carga
             />
           ) }
         />
@@ -70,16 +82,32 @@ export default function LoginScreen() {
                    onBlur={ onBlur }
                    onChangeText={ onChange }
                    value={ value }
-                   secureTextEntry placeholderTextColor="#999"/>
+                   secureTextEntry placeholderTextColor="#999"
+                   editable={!isLoading} // Bloquear input si carga
+                   />
           ) }
         />
         { errors.password && <Text style={{ color: errorColor } }>{ errors.password.message }</Text> }
-        <Pressable style={ styles.button } onPress={ handleSubmit(onSubmit ) }>
-          <Text style={ styles.buttonText }>Iniciar sesión</Text>
+        
+        {/* 4. Botón modificado con lógica de carga */}
+        <Pressable 
+          style={ styles.button } 
+          onPress={ handleSubmit(onSubmit ) }
+          disabled={isLoading}
+        >
+          {isLoading ? (
+            <View style={{ flexDirection: 'row', alignItems: 'center', gap: 10 }}>
+              <ActivityIndicator size="small" color="white" />
+              <Text style={ styles.buttonText }>Iniciando sesión...</Text>
+            </View>
+          ) : (
+            <Text style={ styles.buttonText }>Iniciar sesión</Text>
+          )}
         </Pressable>
+
         {/*<Link href="/(unregister)/forgot-password"*/ }
-        {/*      style={ styles.forgotPasswordLink }>*/ }
-        {/*  <Text style={ styles.forgotPasswordText }>OLVIDE MI CONTRASEÑA</Text>*/ }
+        {/* style={ styles.forgotPasswordLink }>*/ }
+        {/* <Text style={ styles.forgotPasswordText }>OLVIDE MI CONTRASEÑA</Text>*/ }
         {/*</Link>*/ }
       </View>
 
@@ -126,7 +154,9 @@ const styles = StyleSheet.create( {
     paddingVertical: 18,
     borderRadius   : 30,
     alignItems     : "center",
-    marginTop      : 20
+    marginTop      : 20,
+    flexDirection: 'row', // Asegura centrado si hay icono
+    justifyContent: 'center'
   },
   buttonText : { color: "white", fontSize: 16, fontWeight: "bold" },
   // Estilos para el Link

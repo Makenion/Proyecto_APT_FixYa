@@ -22,6 +22,7 @@ var (
 	ErrWorkerEmailDifferent      = errors.New("the gmail send is different from the jwt")
 	ErrSpecialityNotFound        = errors.New("speciality with that id not found")
 	ErrCertificateTypeDontExists = errors.New("certificate type with that id not found")
+	MissingStateValue            = errors.New("state missing")
 )
 
 // Errores de Location

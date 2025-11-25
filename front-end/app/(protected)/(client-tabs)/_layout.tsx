@@ -1,6 +1,6 @@
-import { Tabs }                   from "expo-router"
-import { StyleSheet, Text, View } from "react-native"
-import { Ionicons }               from "@expo/vector-icons"
+import { Ionicons } from "@expo/vector-icons";
+import { Tabs } from "expo-router";
+import { StyleSheet, Text, View } from "react-native";
 
 const TabIcon = ( { iconName, name, focused }: {
   iconName: any;

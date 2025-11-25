@@ -26,12 +26,13 @@ func (h *Handler) RegisterRouter(router *mux.Router, middleware *middleware.Midd
 	// router.HandleFunc("/", h.handlerCreateWorker).Methods("POST")
 	protectedRoutes := router.PathPrefix("").Subrouter()
 	protectedRoutes.Use(middleware.JWTMiddleware)
-	protectedRoutes.HandleFunc("/", h.handlerGetWorkerByFilters).Methods("GET")
-	protectedRoutes.HandleFunc("/", h.handlerUpdateWorker).Methods("PUT")
-	protectedRoutes.HandleFunc("/", h.handlerCreateWorker).Methods("POST")
+	protectedRoutes.HandleFunc("", h.handlerGetWorkerByFilters).Methods("GET")
+	protectedRoutes.HandleFunc("", h.handlerUpdateWorker).Methods("PUT")
+	protectedRoutes.HandleFunc("", h.handlerCreateWorker).Methods("POST")
 }
 
 func (h *Handler) handlerCreateWorker(w http.ResponseWriter, r *http.Request) {
+	println("Creando worker log")
 	ctx := r.Context()
 	var payload workermodel.RegisterWorkerPayload
 

@@ -1,12 +1,12 @@
 // App.js
 import React from 'react';
-import { 
-  StyleSheet, 
-  Text, 
-  View, 
-  SafeAreaView, 
-  Image, 
-  TouchableOpacity 
+import {
+  Image,
+  SafeAreaView,
+  StyleSheet,
+  Text,
+  TouchableOpacity,
+  View
 } from 'react-native';
 
 // Este es el componente principal que renderiza tu pantalla
@@ -29,7 +29,7 @@ export default function App() {
 
         {/* --- Logo principal --- */}
         <Image 
-          source={require('./assets/logo.png')} 
+          source={require('./assets/images/logo.png')} 
           style={styles.logo} 
         />
 
@@ -42,7 +42,7 @@ export default function App() {
             onPress={() => handlePress('Trabajador')}
           >
             <Image 
-              source={require('./assets/worker-avatar.png')} 
+              source={require('./assets/images/worker-avatar.png')} 
               style={styles.cardImage} 
             />
             <Text style={styles.cardText}>Trabajador</Text>
@@ -54,7 +54,7 @@ export default function App() {
             onPress={() => handlePress('Usuario')}
           >
             <Image 
-              source={require('./assets/user-avatar.png')} 
+              source={require('./assets/images/user-avatar.png')} 
               style={styles.cardImage} 
             />
             <Text style={styles.cardText}>Usuario</Text>

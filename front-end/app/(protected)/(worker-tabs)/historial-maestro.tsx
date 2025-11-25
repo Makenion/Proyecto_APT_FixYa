@@ -1,6 +1,14 @@
 // 🎯 ARCHIVO: app/(tabs2)/historial-maestro.tsx (BOTÓN "REVISAR TRABAJO" AÑADIDO)
 
-import React, { useState } from "react"
+import { useAuth } from "@/hooks/auth_context"
+import {
+  Ionicons
+} from "@expo/vector-icons"
+import {
+  Stack,
+  useRouter
+} from "expo-router"
+import React, { useEffect, useState } from "react"
 import {
   Pressable,
   ScrollView,
@@ -8,17 +16,28 @@ import {
   Text,
   TextInput,
   View
-}                          from "react-native"
+} from "react-native"
 import {
   SafeAreaView
-}                          from "react-native-safe-area-context"
-import {
-  Ionicons
-}                          from "@expo/vector-icons"
-import {
-  Stack,
-  useRouter
-}                          from "expo-router"
+} from "react-native-safe-area-context"
+import { useCountdown } from "./components/timer"
+
+type Request = {
+  id: number;
+  request_id: number;
+  title: string;
+  created_at: string;
+  ends_at: string;
+  date_accepted: string;
+  complexity: string;
+  location_text: string;
+  description: string;
+  value: string;
+  estimated_time: string;
+  status: string;
+  imageUrls: string;
+  imageCount: string;
+};
 
 // --- Datos de ejemplo (Añadimos "En progreso" con más detalles) ---
 const MOCK_HISTORY_DATA = {
@@ -73,35 +92,33 @@ const MOCK_HISTORY_DATA = {
 }
 
 // --- Componente de Tarjeta de Historial (MODIFICADO) ---
-const HistoryCard = ( { job, router, isProgressTab }: {
-  job: any,
+const HistoryCard = ( { req, router, isProgressTab }: {
+  req: any,
   router: any,
   isProgressTab: boolean
 } ) => {
+  console.log("req de HistoryCard")
+  console.log(req)
+  const timeLeft = useCountdown(req.request.ends_at, 60000);
+  const acepted_at_time = useCountdown(req.date_accepted, 60000 * 60 * 24)
   // Determina qué fecha/tiempo mostrar
-  const showTimeAndDays = isProgressTab && job.timeRemaining &&
-    job.daysRemaining
   const fechaMostrada   = !isProgressTab && (
-    job.status === "Completado" || job.status === "Cancelado"
+    req.request.status === "completado" || req.request.status === "cancelado"
   )
-    ? job.fechaCompletado
-    : job.fechaInicio
-  const isCompleted     = job.status === "Completado" // Variable para saber si está completado
+    ? req.request.ends_at
+    : req.date_accepted
+  const isCompleted     = req.request.status === "Completado" // Variable para saber si está completado
 
   return (
     // Quitamos onPress general y ponemos activeOpacity=1
     <Pressable
-      key={ job.id }
+      key={ req.id }
       style={ styles.jobCard }
-      activeOpacity={ 1 }
     >
       <View style={ styles.cardTopRow }>
-        { showTimeAndDays ? (
+        { isProgressTab ? (
           <>
-            <Text
-              style={ styles.cardTimeRemaining }>{ job.timeRemaining }</Text>
-            <Text
-              style={ styles.cardDaysRemaining }>{ job.daysRemaining }</Text>
+            <Text style={ styles.cardTimeRemaining }>{`${timeLeft.days}d ${timeLeft.hours}h ${timeLeft.minutes}m`}</Text>
           </>
         ) : (
           fechaMostrada &&
@@ -121,18 +138,18 @@ const HistoryCard = ( { job, router, isProgressTab }: {
               isCompleted ? styles.statusTextCompleted : // Usamos la variable isCompleted
                 styles.statusTextCancelled
           ] }>
-            { isProgressTab ? "En progreso" : job.status }
+            { isProgressTab ? "En progreso" : req.request.status }
           </Text>
         </View>
       </View>
-      <Text style={ styles.cardJobNumber }>Trabajo { job.jobNumber }</Text>
-      <Text style={ styles.cardTitle }>{ job.title }</Text>
+      <Text style={ styles.cardAceptedAt }>{`Aceptada hace ${acepted_at_time.days} dias`}</Text>
+      <Text style={ styles.cardJobNumber }>Trabajo N°{ req.request.id }</Text>
+      <Text style={ styles.cardTitle }>{ req.request.title }</Text>
       <Text style={ styles.cardLocation }>
-        <Ionicons name="location-pin" size={ 14 } color="#7F8C8D"/>
-        { " " }{ job.location }, <Text
-        style={ { color: "#3498DB" } }>{ job.distance }</Text>
+        <Ionicons name="location" size={ 14 } color="#7F8C8D"/>
+        { " " }{ req.request.location_text }
       </Text>
-      <Text style={ styles.cardPrice }>{ job.price }</Text>
+      <Text style={ styles.cardPrice }>{ req.request.value }</Text>
 
       {/* --- BOTONES CONDICIONALES --- */ }
       {/* Si está "En progreso" */ }
@@ -142,7 +159,7 @@ const HistoryCard = ( { job, router, isProgressTab }: {
             style={ [styles.button, styles.buttonOutline] }
             onPress={ ( e ) => {
               e.stopPropagation()
-              router.push( `/detalles-trabajo-maestro/${ job.id }` )
+              router.push( `/detalles-trabajo-maestro/${ req.id }` )
             } }
           >
             <Text style={ [
@@ -153,7 +170,7 @@ const HistoryCard = ( { job, router, isProgressTab }: {
             style={ [styles.button, styles.buttonSolid] }
             onPress={ ( e ) => {
               e.stopPropagation()
-              router.push( `/seguimiento-trabajo/${ job.id }` )
+              router.push( `/seguimiento-trabajo/${ req.id }` )
               {
                 "true"
               }
@@ -175,7 +192,7 @@ const HistoryCard = ( { job, router, isProgressTab }: {
             ] } // Botón un poco más ancho
             onPress={ ( e ) => {
               e.stopPropagation()
-              router.push( `/revision-trabajo/${ job.id }` )
+              router.push( `/revision-trabajo/${ req.id }` )
             } } // Navega a la nueva ruta
           >
             <Text style={ [
@@ -195,22 +212,44 @@ export default function HistorialMaestroScreen() {
   const router                                = useRouter()
   const [activeFilterTab, setActiveFilterTab] = useState( "Completados" ) // Cambiado a Completados por defecto
   const filterTabs                            = [
-    "En progreso", "Completados", "Cancelados"
+    "En curso", "Completados", "Cancelados"
   ]
+  //getRequestsWorker
+  const {getRequestsWorker} = useAuth()
+  const [requests, setRequests] = useState<any[]>([])
+  const [loading, setLoading] = useState(false)
 
+  useEffect(() => {
+      const loadRequests = async () => {
+        setLoading(true)
+        try {
+          const data = await getRequestsWorker(activeFilterTab.toLowerCase())
+          console.log("data de historial_maestro")
+          console.log(data)
+          setRequests(data)
+        } catch (error) {
+          console.error('Error loading requests:', error)
+        } finally {
+          setLoading(false)
+        }
+      }
+  
+      loadRequests()
+    }, [activeFilterTab])
   // --- Función para renderizar el contenido ---
   const renderTabContent = () => {
     // @ts-ignore
-    const jobs          = MOCK_HISTORY_DATA[activeFilterTab] || []
-    const isProgressTab = activeFilterTab === "En progreso"
+    const isProgressTab = activeFilterTab === "En curso"
+    console.log("requests de renderTabContent")
+    console.log(requests)
 
-    if ( jobs.length === 0 ) {
+    if ( requests.length === 0 ) {
       return <Text style={ styles.emptyText }>No hay
         trabajos { activeFilterTab.toLowerCase() } en tu historial.</Text>
     }
 
-    return jobs.map( job => (
-      <HistoryCard key={ job.id } job={ job } router={ router }
+    return requests.map( req => (
+      <HistoryCard key={ req.id } req={ req } router={ router }
                    isProgressTab={ isProgressTab }/>
     ) )
   }
@@ -263,7 +302,7 @@ export default function HistorialMaestroScreen() {
         <View style={ styles.listHeader }>
           {/* @ts-ignore */ }
           <Text
-            style={ styles.listTitle }>{ MOCK_HISTORY_DATA[activeFilterTab]?.length ||
+            style={ styles.listTitle }>{ requests?.length ||
             0 } trabajos { activeFilterTab.toLowerCase() }</Text>
         </View>
 
@@ -349,16 +388,19 @@ const styles = StyleSheet.create( {
     flexDirection: "row",
     alignItems   : "center",
     marginBottom : 10,
-    gap          : 10
   },
   cardDate           : {
     fontSize   : 14,
     color      : "#7F8C8D",
-    marginRight: "auto"
   },
   cardTimeRemaining  : {
     fontSize  : 14,
     color     : "#E74C3C",
+    fontWeight: "bold",
+  },
+  cardAceptedAt  : {
+    fontSize  : 14,
+    color     : "#00AA00",
     fontWeight: "bold"
   },
   cardDaysRemaining  : {
@@ -369,7 +411,8 @@ const styles = StyleSheet.create( {
   statusBadge        : {
     paddingHorizontal: 10,
     paddingVertical  : 5,
-    borderRadius     : 15
+    borderRadius     : 15,
+    marginLeft: "auto"
   },
   statusInProgress   : { backgroundColor: "#D6EAF8" /* Azul claro */ },
   statusCompleted    : { backgroundColor: "#D4EDDA" /* Verde claro */ },

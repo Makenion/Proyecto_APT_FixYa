@@ -1,7 +1,7 @@
-import { z }                from "zod"
-import { userTypeSchema }   from "@/models/user/response"
-import { passwordSchema }   from "@/models/utils/password"
+import { userTypeSchema } from "@/models/user/response"
+import { passwordSchema } from "@/models/utils/password"
 import { format, validate } from "rut.js"
+import { z } from "zod"
 
 export const registerUserSchema = z.object( {
   full_name    : z.string( {

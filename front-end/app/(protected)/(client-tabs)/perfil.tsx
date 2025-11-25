@@ -1,3 +1,11 @@
+import { useAuth } from "@/hooks/auth_context"
+import {
+  Ionicons
+} from "@expo/vector-icons"
+import {
+  Stack,
+  useRouter
+} from "expo-router"
 import React from "react"
 import {
   Image,
@@ -6,18 +14,10 @@ import {
   StyleSheet,
   Text,
   View
-}            from "react-native"
-import {
-  Ionicons
-}            from "@expo/vector-icons"
-import {
-  Stack,
-  useRouter
-}            from "expo-router"
+} from "react-native"
 import {
   SafeAreaView
-}            from "react-native-safe-area-context"
-import { useAuth } from "@/hooks/auth_context"
+} from "react-native-safe-area-context"
 
 
 const ListItem = ( { icon, text, onPress }: {

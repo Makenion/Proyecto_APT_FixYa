@@ -1,14 +1,15 @@
-import React                                        from "react"
+import { useRouter } from "expo-router"
+import React from "react"
 import { Image, Pressable, StyleSheet, Text, View } from "react-native"
 import {
   SafeAreaView
-}                                                   from "react-native-safe-area-context"
-import { useRouter }                                from "expo-router"
+} from "react-native-safe-area-context"
 
 export default function WorkerRegisterSuccess() {
   const router = useRouter()
 
   const handleGoToHome = () => {
+    console.log("router a protected worker-tabs")
     router.replace( "/(protected)/(worker-tabs)" )
   }
 

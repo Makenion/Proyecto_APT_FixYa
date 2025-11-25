@@ -1,4 +1,13 @@
-import React, { useState } from "react"
+import { useAuth } from "@/hooks/auth_context"
+import { getRelativeTime } from "@/lib/utils"
+import {
+  Ionicons
+} from "@expo/vector-icons"
+import {
+  Stack,
+  useRouter
+} from "expo-router"
+import React, { useEffect, useState } from "react"
 import {
   Image,
   Modal,
@@ -7,18 +16,10 @@ import {
   StyleSheet,
   Text,
   View
-}                          from "react-native"
+} from "react-native"
 import {
   SafeAreaView
-}                          from "react-native-safe-area-context"
-import {
-  Ionicons
-}                          from "@expo/vector-icons"
-import {
-  Stack,
-  useRouter
-}                          from "expo-router"
-import { useAuth }         from "@/hooks/auth_context"
+} from "react-native-safe-area-context"
 
 const maestro = {
   nombre             : "Esteban",
@@ -30,34 +31,21 @@ const maestro = {
 
 type Oferta = {
   id: number;
-  titulo: string;
-  fecha: string;
-  duracion: string;
-  estado: string;
-  ubicacion: string;
-  precio: string;
+  title: string;
+  created_at: string;
+  ends_at: string;
+  complexity: string;
+  location_text: string;
+  description: string;
+  value: string;
+  estimated_time: string;
+  status: string;
+  imageUrls: string;
+  imageCount: string;
 };
 
-const ofertas: Oferta[] = [
-  {
-    id       : 212, // Trabajo #212
-    titulo   : "Reparación fuga gas",
-    fecha    : "20/09/25",
-    duracion : "1 día",
-    estado   : "Urgente", // Estado "Urgente"
-    ubicacion: "San alfonso 550, Viña del mar, 2km",
-    precio   : "$50.000"
-  },
-  {
-    id       : 213,
-    titulo   : "Remodelación techo",
-    fecha    : "20/09/25",
-    duracion : "3 días",
-    estado   : "Disponible", // Estado "Disponible"
-    ubicacion: "Calle las rosas 37, Viña del Mar, 2km.",
-    precio   : "$30.000"
-  }
-]
+
+
 
 const OfferCard = ( { oferta, router, onAcceptPress }: {
   oferta: Oferta,
@@ -65,46 +53,78 @@ const OfferCard = ( { oferta, router, onAcceptPress }: {
   onAcceptPress: ( oferta: Oferta ) => void
 } ) => {
 
-  const isUrgente      = oferta.estado === "Urgente"
-  const badgeStyle     = isUrgente
-    ? styles.urgenteBadge
-    : styles.disponibleBadge
-  const badgeTextStyle = isUrgente ? styles.urgenteText : styles.disponibleText
+  const badgeStyle = oferta.complexity == "baja" 
+    ? styles.bajaBadge 
+    : oferta.complexity == "media" 
+        ? styles.mediaBadge 
+        : styles.altaBadge
+  const badgeTextStyle = oferta.complexity == "baja" 
+    ? styles.bajaText 
+    : oferta.complexity == "media" 
+        ? styles.mediaText 
+        : styles.altaText
+
+
+        
+  const ends_at_date = oferta.ends_at.split('T')[0]
+  const fecha_publi = getRelativeTime(oferta.created_at.split('T')[0])
+
+  const movingResume = (request: any) => {
+    console.log("request a resumir")
+    console.log(request)
+    const images = request.images
+    console.log("images resumen")
+    console.log(images)
+    console.log("Image map")
+    console.log(images.map((img: { url: any }) => img.url).join(','))
+    console.log(images.length.toString())
+    router.push( {
+      pathname: "/resumen-solicitud-final",
+      params  : {
+        title: request.title,
+        description: request.description,
+        value: request.value.toString(),
+        estimated_time: request.estimated_time.toString(),
+        status: request.status,
+        location_text: request.location_text,
+        ends_at: request.ends_at,
+        complexity: request.complexity,
+        created_at: request.created_at,
+        isWorker: "true",
+        idSolicitud: request.id,
+        // Para imágenes, pasar solo URLs o IDs
+        imageUrls: images.map((img: { url: any }) => img.url).join(','), // Convertir array a string
+        imageCount: images.length.toString()
+      }
+    } )
+  }
 
   return (
     <View style={ styles.card }>
       {/* ... (Header, Título, Ubicación no cambian) ... */ }
       <View style={ styles.cardHeader }>
-        <Text style={ styles.cardDate }>{ oferta.fecha }</Text>
-        <Text style={ styles.cardDuration }>{ oferta.duracion }</Text>
+        <Text style={ styles.cardDate }>{ ends_at_date}</Text>
+        <Text style={ styles.cardDuration }>{ fecha_publi }</Text>
         <View style={ badgeStyle }>
-          <Text style={ badgeTextStyle }>{ oferta.estado }</Text>
+          <Text style={ badgeTextStyle }>{ oferta.complexity }</Text>
+
         </View>
       </View>
-      <Text style={ styles.cardTitle }>{ oferta.titulo }</Text>
+      <Text style={ styles.cardTitle }>{ oferta.title }</Text>
       <View style={ styles.locationContainer }>
         <Ionicons name="location-outline" size={ 16 } color="#555"/>
-        <Text style={ styles.locationText }>{ oferta.ubicacion }</Text>
+        <Text style={ styles.locationText }>{ oferta.location_text }</Text>
       </View>
 
       {/* Footer de la tarjeta (MODIFICADO con 2 botones) */ }
       <View style={ styles.cardFooter }>
-        <Text style={ styles.price }>{ oferta.precio }</Text>
-
         <View style={ styles.cardButtonsContainer }>
-          <Pressable
-            style={ styles.buttonOutline } // Botón "Detalles" con borde
-            onPress={ () => router.push(
-              `/detalles-trabajo-maestro/${ oferta.id }` ) }
-          >
-            <Text style={ styles.buttonTextOutline }>Detalles</Text>
-          </Pressable>
           <Pressable
             style={ styles.buttonSolid } // Botón "Aceptar Trabajo" sólido
             // 👇 4. Llama a la función del componente padre
-            onPress={ () => onAcceptPress( oferta ) }
+            onPress={ () => {movingResume(oferta)} }
           >
-            <Text style={ styles.buttonTextSolid }>Aceptar Trabajo</Text>
+            <Text style={ styles.buttonTextSolid }>Detalles</Text>
           </Pressable>
         </View>
 
@@ -116,17 +136,37 @@ const OfferCard = ( { oferta, router, onAcceptPress }: {
 
 export default function MaestroDashboardScreen() {
   const router = useRouter()
-  const {user} = useAuth()
+  const {user, getSolicitudesTrabajador } = useAuth()
 
   // 👇 5. Estados para el modal
   const [modalVisible, setModalVisible] = useState( false )
   const [selectedJob, setSelectedJob]   = useState<Oferta | null>( null )
+
 
   // 👇 6. Funciones para manejar el modal
   const handleOpenAcceptModal = ( oferta: Oferta ) => {
     setSelectedJob( oferta ) // Guarda el trabajo seleccionado
     setModalVisible( true ) // Abre el modal
   }
+
+  const [loading, setLoading] = useState(false)
+  const [requests, setRequests] = useState<any[]>([])
+
+    useEffect(() => {
+    const loadRequests = async () => {
+      setLoading(true)
+      try {
+        const data = await getSolicitudesTrabajador("pendiente")
+        setRequests(data)
+      } catch (error) {
+        console.error('Error loading requests:', error)
+      } finally {
+        setLoading(false)
+      }
+    }
+
+    loadRequests()
+  }, [])
 
   const handleConfirmAcceptJob = () => {
     if ( !selectedJob ) return
@@ -186,7 +226,7 @@ export default function MaestroDashboardScreen() {
             <Text style={ styles.seeAll }>Ver todas</Text>
           </Pressable>
         </View>
-        { ofertas.map( oferta => (
+        { requests.map( oferta => (
           <OfferCard
             key={ oferta.id }
             oferta={ oferta }
@@ -424,5 +464,48 @@ const styles = StyleSheet.create( {
     color     : "#7F8C8D",
     fontSize  : 14,
     fontWeight: "bold"
-  }
+  },
+  bajaText: { 
+    color: "white", 
+    fontSize: 12, 
+    fontWeight: "bold",
+    textTransform: 'capitalize'
+  },
+  bajaBadge: {
+    backgroundColor: "#27AE60", // Verde
+    borderRadius: 15,
+    paddingHorizontal: 10,
+    paddingVertical: 5,
+    marginLeft: "auto"
+  },
+
+  // Para complejidad MEDIA (Naranja/Amarillo)
+  mediaText: { 
+    color: "white", 
+    fontSize: 12, 
+    fontWeight: "bold",
+    textTransform: 'capitalize'
+  },
+  mediaBadge: {
+    backgroundColor: "#F39C12", // Naranja
+    borderRadius: 15,
+    paddingHorizontal: 10,
+    paddingVertical: 5,
+    marginLeft: "auto"
+  },
+
+  // Para complejidad ALTA (Rojo)
+  altaText: { 
+    color: "white", 
+    fontSize: 12, 
+    fontWeight: "bold",
+    textTransform: 'capitalize'
+  },
+  altaBadge: {
+    backgroundColor: "#E74C3C", // Rojo
+    borderRadius: 15,
+    paddingHorizontal: 10,
+    paddingVertical: 5,
+    marginLeft: "auto"
+  },
 } )

@@ -1,8 +1,9 @@
-import { z } from "zod"
 import {
   requestImageTypeSchema,
+  RequestStatusTypeEnum,
   requestStatusTypeSchema
-}            from "@/models/sales/response"
+} from "@/models/sales/response"
+import { z } from "zod"
 
 export const registerReviewSchema = z.object( {
   rating           : z.int(),
@@ -15,6 +16,15 @@ export const registerReviewSchema = z.object( {
 export type RegisterReviewPayload = z.infer<typeof registerReviewSchema>
 
 export const requestImagePayloadSchema = z.object( {
+  name: z.string()
+  .refine((val) => 
+      val.toLowerCase().endsWith('.jpg') ||
+      val.toLowerCase().endsWith('.jpeg') ||
+      val.toLowerCase().endsWith('.png') ||
+      val.toLowerCase().endsWith('.gif') ||
+      val.toLowerCase().endsWith('.webp'), {
+      message: "El archivo debe ser una imagen (jpg, jpeg, png, gif, webp)"
+    }),
   url : z.string(),
   type: requestImageTypeSchema
 } )
@@ -33,13 +43,13 @@ export const registerRequestSchema = z.object( {
   title        : z.string(),
   description  : z.string(),
   speciality_id: z.string(),
-  value        : z.number(),
+  value        : z.number().default(0),
   ends_at      : z.iso.datetime(),
-  status       : requestStatusTypeSchema,
-  location     : z.string(),
+  status       : requestStatusTypeSchema.default(RequestStatusTypeEnum.Pending),
+  location     : z.string().default(""),
   location_text: z.string(),
   images       : z.array( requestImagePayloadSchema ),
-  notes        : z.array( requestNotePayloadSchema )
+  notes        : z.array( requestNotePayloadSchema ).default([])
 } )
 
 export type RegisterRequestPayload = z.infer<typeof registerRequestSchema>
@@ -57,15 +67,6 @@ export const updateRequestSchema = z.object( {
 
 export type UpdateRequestPayload = z.infer<typeof updateRequestSchema>
 
-export const registerRequestWorkerSchema = z.object( {
-  date_start   : z.iso.datetime(),
-  date_finish  : z.iso.datetime(),
-  status_worker: requestStatusTypeSchema,
-  request_id   : z.string()
-} )
-
-export type RegisterRequestWorkerPayload = z.infer<typeof registerRequestWorkerSchema>
-
 export const updateRequestWorkerSchema = z.object( {
   date_start    : z.iso.datetime().nullish(),
   date_finish   : z.iso.datetime().nullish(),
@@ -76,3 +77,17 @@ export const updateRequestWorkerSchema = z.object( {
 } )
 
 export type UpdateRequestWorkerPayload = z.infer<typeof updateRequestWorkerSchema>
+
+export const updateValorRequest = z.object( {
+  value_proposed         : z.coerce.number(),
+  request_id      : z.coerce.number().default(0),
+} )
+
+export type UpdateValorRequest = z.infer<typeof updateValorRequest>
+
+export const registerRequestWorkerPayload = z.object( {
+  request_id: z.coerce.number().default(0),
+  worker_id: z.coerce.number().default(0)
+} )
+
+export type RegisterRequestWorkerPayload = z.infer<typeof registerRequestWorkerPayload>

@@ -117,7 +117,19 @@ func (s *Store) GetWorkerByFilters(ctx context.Context, filters map[string]inter
 	var details []workermodel.WorkerDetail
 	query := s.db.WithContext(ctx).Model(&workermodel.WorkerDetail{})
 	if filters["id"] != nil {
-		query = query.Where("ID = ?", filters["id"])
+		query = query.Where("user_id = ?", filters["id"])
+	}
+
+	if filters["preload"] != nil {
+		if preloadStr, ok := filters["preload"].(string); ok {
+			preloads := strings.Split(preloadStr, ",")
+			for _, preload := range preloads {
+				preload = strings.TrimSpace(preload) // Limpiar espacios
+				if preload != "" {
+					query = query.Preload(preload)
+				}
+			}
+		}
 	}
 	limit := 10
 	if l, ok := filters["limit"].(int); ok && l > 0 {

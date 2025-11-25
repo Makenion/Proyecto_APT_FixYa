@@ -47,7 +47,7 @@ func (s *APIServer) Run() error {
 	userService := user.NewUserService(userStore, locationStore)
 	locationService := location.NewLocationService(locationStore)
 	workerService := worker.NewWorkerService(workerStore)
-	saleService := sales.NewSaleService(saleStore)
+	saleService := sales.NewSaleService(saleStore, workerStore)
 
 	// MiddleWare
 	middleWare := middleware.NewMiddleWare(userService)

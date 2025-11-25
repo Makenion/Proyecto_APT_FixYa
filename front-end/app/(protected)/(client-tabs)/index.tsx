@@ -1,3 +1,7 @@
+import { useAuth } from "@/hooks/auth_context"
+import {
+  useRouter
+} from "expo-router"
 import React from "react"
 import {
   Image,
@@ -7,14 +11,10 @@ import {
   Text,
   TextInput,
   View
-}            from "react-native"
+} from "react-native"
 import {
   SafeAreaView
-}            from "react-native-safe-area-context"
-import {
-  useRouter
-}            from "expo-router"
-import { useAuth } from "@/hooks/auth_context"
+} from "react-native-safe-area-context"
 
 export default function HomeScreen() {
   const router = useRouter()
@@ -59,7 +59,7 @@ const {user} = useAuth()
           </View>
         </View>
 
-        {/* Title and Search */ }
+        {/* Barra de busqueda proposito por definir */ }
         <View style={ styles.searchSection }>
           <Text style={ styles.sectionTitle }>Qué necesitas hoy?</Text>
           <Pressable onPress={ () => router.push( "/buscar-maestros" ) }>
@@ -73,19 +73,20 @@ const {user} = useAuth()
         />
 
         {/* Cards */ }
+      {/* Ver todos los maestros. */}
         <Card
-          title="Arreglos"
-          description="Necesitas arreglar un enchufe? o tu refrigerador no está funcionando correctamente?"
+          title="Maestros"
+          description="¿Necesitas la ayuda de algun maestro en especifico?. Buscalo aca."
           buttonText="Ver maestros"
           onPress={ () => router.push( "/buscar-maestros" ) }
         />
 
         <Card
-          title="Remodelaciones"
-          description="Consulta nuestro creador de presupuestos para trabajos más extensos"
+          title="Solicitudes"
+          description="Espacio para enviar solicitudes de trabajos, sobre arreglos, remodelaciones, etc."
           buttonText="Ir a formulario"
           isFormButton={ true }
-          onPress={ () => router.push( "/remodelaciones-form" ) }
+          onPress={ () => router.push( "/formulario-arreglos" ) }
         />
       </ScrollView>
     </SafeAreaView>

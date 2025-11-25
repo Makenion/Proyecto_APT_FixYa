@@ -1,6 +1,8 @@
 // 🎯 ARCHIVO: app/detalles-trabajo-maestro/[id].tsx (CONDICIONAL COMPLETO)
 
-import React, { useState }                        from "react"
+import { Ionicons } from "@expo/vector-icons"
+import { Stack, useLocalSearchParams, useRouter } from "expo-router"
+import React, { useState } from "react"
 import {
   KeyboardAvoidingView,
   Platform,
@@ -10,12 +12,10 @@ import {
   Text,
   TextInput,
   View
-}                                                 from "react-native"
+} from "react-native"
 import {
   SafeAreaView
-}                                                 from "react-native-safe-area-context"
-import { Stack, useLocalSearchParams, useRouter } from "expo-router"
-import { Ionicons }                               from "@expo/vector-icons"
+} from "react-native-safe-area-context"
 
 // --- Textos completos ---
 const fullDescription = "El techo presenta evidentes filtraciones de agua durante la lluvia, cliente sospecha que el problema es una teja rota. Se necesita revisión completa y reemplazo de las partes dañadas para evitar futuras goteras."
@@ -109,7 +109,7 @@ export default function DetallesTrabajoMaestroScreen() {
           <Text style={ styles.jobNumber }>Trabajo { trabajo.jobNumber }</Text>
           <Text style={ styles.title }>{ trabajo.title }</Text>
           <Text style={ styles.location }>
-            <Ionicons name="location-pin" size={ 14 } color="#7F8C8D"/>
+            <Ionicons name="location" size={ 14 } color="#7F8C8D"/>
             { " " }{ trabajo.location }, <Text
             style={ styles.distance }>{ trabajo.distance }</Text>
           </Text>

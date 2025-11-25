@@ -1,6 +1,6 @@
-import { api }            from "@/lib/api"
+import { api } from "@/lib/api"
 import { Comuna, Region } from "@/models/location/response"
-import { Speciality }     from "@/models/worker/response"
+import { Speciality } from "@/models/worker/response"
 
 export const specialitiesOption = {
   queryKey: ["specialities"],

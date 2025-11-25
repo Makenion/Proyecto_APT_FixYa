@@ -1,3 +1,11 @@
+import { useAuth } from "@/hooks/auth_context"
+import {
+  Ionicons
+} from "@expo/vector-icons"
+import {
+  Stack,
+  useRouter
+} from "expo-router"
 import React, { useState } from "react"
 import {
   Image,
@@ -7,17 +15,10 @@ import {
   StyleSheet,
   Text,
   View
-}                          from "react-native"
+} from "react-native"
 import {
   SafeAreaView
-}                          from "react-native-safe-area-context"
-import {
-  Ionicons
-}                          from "@expo/vector-icons"
-import {
-  Stack,
-  useRouter
-}                          from "expo-router"
+} from "react-native-safe-area-context"
 
 // --- Componente Reutilizable para cada opción del menú ---
 const ListItem = ( { icon, text, onPress }: {
@@ -66,11 +67,13 @@ const menuOptions = [
 export default function PerfilMaestroScreen() {
   const router                          = useRouter()
   const [modalVisible, setModalVisible] = useState( false )
+  const {logout, user} = useAuth()
 
   // --- Función de Logout (MODIFICADA) ---
-  const handleLogout = () => {
+  const handleLogout = async () => {
     setModalVisible( false )
-    console.log( "Cerrando sesión..." )
+    await logout()
+    router.replace('/(unregister)/login')
     // Lógica para limpiar tokens/storage...
 
     // 👇 CAMBIO AQUÍ: Redirige a la raíz de la app (app/index.tsx)
